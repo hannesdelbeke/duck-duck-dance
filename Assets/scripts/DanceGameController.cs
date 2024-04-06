@@ -61,40 +61,46 @@ public class DanceGameController : MonoBehaviour
         audio.pitch = Random.Range(0.9f, 1.1f);
         audio.PlayOneShot(quackSound);
     }
+    Sprite GetDirectionSprite(Direction direction)
+    {
+        switch (direction)
+        {
+            case Direction.Up:
+                return upSprite;
+            case Direction.Down:
+                return downSprite;
+            case Direction.Left:
+                return leftSprite;
+            case Direction.Right:
+                return rightSprite;
+            default:
+                return neutralSprite1; // Return a default sprite if direction is not recognized
+        }
+    }
+
+    Sprite GetFailSprite(Direction direction)
+    {
+        switch (direction)
+        {
+            case Direction.Up:
+                return upFailSprite;
+            case Direction.Down:
+                return downFailSprite;
+            case Direction.Left:
+                return leftFailSprite;
+            case Direction.Right:
+                return rightFailSprite;
+            default:
+                return neutralSprite1; // Return a default sprite if direction is not recognized
+        }
+    }
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.LeftArrow))
+        // If not holding a pose, swap between neutral sprites
+        if (!holdingPose)
         {
-            if (CheckInput(Direction.Left))
-                SetSpriteAndStartTimer(leftSprite);
-            else
-                SetSpriteAndStartTimer(leftFailSprite);
-        }
-        else if (Input.GetKeyDown(KeyCode.RightArrow))
-        {
-            if (CheckInput(Direction.Right))
-                SetSpriteAndStartTimer(rightSprite);
-            else
-                SetSpriteAndStartTimer(rightFailSprite);
-        }
-        else if (Input.GetKeyDown(KeyCode.UpArrow))
-        {
-            if (CheckInput(Direction.Up))
-                SetSpriteAndStartTimer(upSprite);
-            else
-                SetSpriteAndStartTimer(upFailSprite);
-        }
-        else if (Input.GetKeyDown(KeyCode.DownArrow))
-        {
-            if (CheckInput(Direction.Down))
-                SetSpriteAndStartTimer(downSprite);
-            else
-                SetSpriteAndStartTimer(downFailSprite);
-        }
-        else if (!holdingPose)
-        {
-            // If no arrow keys are pressed and not holding a pose, swap between neutral sprites
+            // If no arrow keys are pressed, swap between neutral sprites
             if (Time.time >= neutralSwapTimer)
             {
                 SwapNeutralSprite();
@@ -102,6 +108,7 @@ public class DanceGameController : MonoBehaviour
             }
         }
 
+        // If holding a pose, decrement the pose timer
         if (holdingPose)
         {
             poseTimer -= Time.deltaTime;
@@ -110,6 +117,24 @@ public class DanceGameController : MonoBehaviour
                 holdingPose = false;
                 SetSprite(GetNeutralSprite());
             }
+        }
+    }
+
+    public void ProcessInput(Direction direction)
+    {
+        // if direction is same as current direction, dont change sprite
+        if (holdingPose && (spriteRenderer.sprite == GetDirectionSprite(direction) || spriteRenderer.sprite == GetFailSprite(direction)))
+        {
+            return;
+        }
+
+        if (CheckInput(direction))
+        {
+            SetSpriteAndStartTimer(GetDirectionSprite(direction));
+        }
+        else
+        {
+            SetSpriteAndStartTimer(GetFailSprite(direction));
         }
     }
 
