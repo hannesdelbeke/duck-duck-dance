@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class RhythmGameController : MonoBehaviour
+public class ArrowSpawner : MonoBehaviour
 {
     public GameObject arrowPrefab;
     public Transform upSpawnPoint;
@@ -11,11 +11,11 @@ public class RhythmGameController : MonoBehaviour
     public float arrowSpeed = 2.0f;
     public float spawnInterval = 2.0f; // Interval between arrow spawns
 
-    private InputArea inputArea;
+    private DanceGameController danceController;
 
     void Start()
     {
-        inputArea = FindObjectOfType<InputArea>(); // Find the InputArea script in the scene
+        danceController = FindObjectOfType<DanceGameController>(); // Find the DanceGameController script in the scene
         StartCoroutine(SpawnArrows());
     }
 
@@ -59,44 +59,4 @@ public class RhythmGameController : MonoBehaviour
         arrow.speed = arrowSpeed;
     }
 
-    
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.UpArrow))
-        {
-            CheckInput(Direction.Up);
-        }
-        else if (Input.GetKeyDown(KeyCode.DownArrow))
-        {
-            CheckInput(Direction.Down);
-        }
-        else if (Input.GetKeyDown(KeyCode.LeftArrow))
-        {
-            CheckInput(Direction.Left);
-        }
-        else if (Input.GetKeyDown(KeyCode.RightArrow))
-        {
-            CheckInput(Direction.Right);
-        }
-    }
-
-    void CheckInput(Direction expectedDirection)
-    {
-        GameObject[] arrows = GameObject.FindGameObjectsWithTag("Arrow");
-        foreach (GameObject arrow in arrows)
-        {
-            Arrow arrowComponent = arrow.GetComponent<Arrow>();
-            if (arrowComponent.IsWithinInputArea(inputArea.gameObject.transform.position, inputArea.inputThreshold) && arrowComponent.direction == expectedDirection)
-            {
-                Destroy(arrow);
-                Debug.Log("Success - Player pressed the correct input for the arrow.");
-                // Player pressed the correct input for the arrow
-                // Add scoring or other gameplay logic here
-                return;
-            }
-        }
-        Debug.Log("Fail - Player either missed the arrow or pressed the wrong input.");
-        // Player either missed the arrow or pressed the wrong input
-        // Add logic for missed arrow or wrong input here
-    }
 }
