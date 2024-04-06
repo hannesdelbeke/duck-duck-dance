@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class DanceGameController : MonoBehaviour
 {
+    public AudioClip quackSound;
+
     public Color successFlashColor = Color.white; // Color for success flash
     public Color failFlashColor = Color.red; // Color for fail flash
     public GameObject upFlashObject;
@@ -9,7 +11,8 @@ public class DanceGameController : MonoBehaviour
     public GameObject leftFlashObject;
     public GameObject rightFlashObject;
 
-    public Sprite neutralSprite;
+    public Sprite neutralSprite1;
+    public Sprite neutralSprite2;
     public Sprite leftSprite;
     public Sprite leftFailSprite;
     public Sprite rightSprite;
@@ -20,10 +23,13 @@ public class DanceGameController : MonoBehaviour
     public Sprite downFailSprite;
 
     public float poseTime = 1.0f; // Duration to hold a pose in seconds
+    public float neutralSwapInterval = 0.5f; // Interval to swap between neutral sprites
 
     private SpriteRenderer spriteRenderer;
     private float poseTimer = 0.0f;
+    private float neutralSwapTimer = 0.0f;
     private bool holdingPose = false;
+    private bool usingNeutralSprite1 = true;
 
     private InputArea inputArea;
 
@@ -36,6 +42,24 @@ public class DanceGameController : MonoBehaviour
         {
             Debug.LogError("SpriteRenderer component not found.");
         }
+    }
+
+    void SwapNeutralSprite()
+    {
+        usingNeutralSprite1 = !usingNeutralSprite1;
+        SetSprite(GetNeutralSprite());
+    }
+
+    Sprite GetNeutralSprite()
+    {
+        return usingNeutralSprite1 ? neutralSprite1 : neutralSprite2;
+    }
+
+    void playQuackSound()
+    {
+        AudioSource audio = GetComponent<AudioSource>();
+        audio.pitch = Random.Range(0.9f, 1.1f);
+        audio.PlayOneShot(quackSound);
     }
 
     void Update()
@@ -70,8 +94,12 @@ public class DanceGameController : MonoBehaviour
         }
         else if (!holdingPose)
         {
-            // If none of the arrow keys are pressed and not holding a pose, show neutral pose
-            SetSprite(neutralSprite);
+            // If no arrow keys are pressed and not holding a pose, swap between neutral sprites
+            if (Time.time >= neutralSwapTimer)
+            {
+                SwapNeutralSprite();
+                neutralSwapTimer = Time.time + neutralSwapInterval;
+            }
         }
 
         if (holdingPose)
@@ -80,7 +108,7 @@ public class DanceGameController : MonoBehaviour
             if (poseTimer <= 0)
             {
                 holdingPose = false;
-                SetSprite(neutralSprite); // Return to neutral sprite after holding pose
+                SetSprite(GetNeutralSprite());
             }
         }
     }
@@ -147,7 +175,6 @@ public class DanceGameController : MonoBehaviour
         }
     }
 
-
     void SetSprite(Sprite sprite)
     {
         spriteRenderer.sprite = sprite;
@@ -158,5 +185,7 @@ public class DanceGameController : MonoBehaviour
         SetSprite(sprite);
         holdingPose = true;
         poseTimer = poseTime;
+        playQuackSound();
     }
 }
+
